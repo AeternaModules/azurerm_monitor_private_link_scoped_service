@@ -1,3 +1,7 @@
+output "monitor_private_link_scoped_services_id" {
+  description = "Map of id values across all monitor_private_link_scoped_services, keyed the same as var.monitor_private_link_scoped_services"
+  value       = { for k, v in azurerm_monitor_private_link_scoped_service.monitor_private_link_scoped_services : k => v.id }
+}
 output "monitor_private_link_scoped_services_linked_resource_id" {
   description = "Map of linked_resource_id values across all monitor_private_link_scoped_services, keyed the same as var.monitor_private_link_scoped_services"
   value       = { for k, v in azurerm_monitor_private_link_scoped_service.monitor_private_link_scoped_services : k => v.linked_resource_id }
