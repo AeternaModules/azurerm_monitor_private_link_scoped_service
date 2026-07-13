@@ -14,40 +14,54 @@ EOT
     resource_group_name = string
     scope_name          = string
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_monitor_private_link_scoped_service's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: name
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: resource_group_name
-  #   condition: length(value) <= 90
-  #   message:   [from resourcegroups.ValidateName: invalid when len(value) > 90]
-  #   source:    [from resourcegroups.ValidateName: invalid when len(value) > 90]
-  # path: resource_group_name
-  #   condition: !endswith(value, ".")
-  #   message:   [from resourcegroups.ValidateName: must not end with "."]
-  #   source:    [from resourcegroups.ValidateName: must not end with "."]
-  # path: resource_group_name
-  #   condition: length(value) != 0
-  #   message:   [from resourcegroups.ValidateName: invalid when len(value) == 0]
-  #   source:    [from resourcegroups.ValidateName: invalid when len(value) == 0]
-  # path: resource_group_name
-  #   source:    [from resourcegroups.ValidateName] !matched
-  # path: scope_name
-  #   source:    [from validate.PrivateLinkScopeName] !ok
-  # path: scope_name
-  #   condition: length(value) >= 1
-  #   message:   [from validate.PrivateLinkScopeName: invalid when len(value) < 1]
-  #   source:    [from validate.PrivateLinkScopeName: invalid when len(value) < 1]
-  # path: scope_name
-  #   condition: length(value) <= 255
-  #   message:   [from validate.PrivateLinkScopeName: invalid when len(value) > 255]
-  #   source:    [from validate.PrivateLinkScopeName: invalid when len(value) > 255]
-  # path: scope_name
-  #   source:    [from validate.PrivateLinkScopeName] !regexp.MustCompile(`^[a-zA-Z0-9()-_.]*[a-zA-Z0-9_-]$`).MatchString(v)
-  # path: linked_resource_id
-  #   source:    validation.Any(...) - no translation rule yet, add one
+  validation {
+    condition = alltrue([
+      for k, v in var.monitor_private_link_scoped_services : (
+        length(v.name) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.monitor_private_link_scoped_services : (
+        length(v.resource_group_name) <= 90
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: invalid when len(value) > 90]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.monitor_private_link_scoped_services : (
+        !endswith(v.resource_group_name, ".")
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: must not end with \".\"]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.monitor_private_link_scoped_services : (
+        length(v.resource_group_name) != 0
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: invalid when len(value) == 0]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.monitor_private_link_scoped_services : (
+        length(v.scope_name) >= 1
+      )
+    ])
+    error_message = "[from validate.PrivateLinkScopeName: invalid when len(value) < 1]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.monitor_private_link_scoped_services : (
+        length(v.scope_name) <= 255
+      )
+    ])
+    error_message = "[from validate.PrivateLinkScopeName: invalid when len(value) > 255]"
+  }
+  # Note: 4 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
